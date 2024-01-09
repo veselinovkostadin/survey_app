@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import Survey from "@/schemas/Survey";
 
 type ApiHandlerContext = {
   params: {
@@ -35,6 +36,38 @@ export async function GET(request: NextRequest, context: ApiHandlerContext) {
     return NextResponse.json(
       {
         error: "Unknown error occured",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest, context: ApiHandlerContext) {
+  const { surveyId } = context.params;
+  const body = await request.json();
+
+  try {
+    const validation = await Survey.safeParseAsync(body);
+    if (!validation.success) {
+      throw validation.error;
+    }
+    const { data } = validation;
+    const survey = await prisma.survey.update({
+      where: {
+        id: surveyId,
+      },
+      data,
+    });
+
+    return NextResponse.json({
+      data: survey,
+    });
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error: "Something went wrong..",
       },
       {
         status: 500,

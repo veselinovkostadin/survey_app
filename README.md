@@ -37,6 +37,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 ## Endpoints
 
+- Get all Surveys
+- Get a Survey
 - Create Survey
 - Update Survey
 - Create Survey Question

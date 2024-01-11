@@ -2,6 +2,7 @@ export const questions = [
   {
     id: 1,
     text: "How would you rate your proficiency in coding on a scale from 1 to 10?",
+    required: true,
   },
   { id: 2, text: "What programming languages are you most comfortable using?" },
   {

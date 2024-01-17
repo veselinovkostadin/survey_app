@@ -1,17 +1,63 @@
-import { useState } from "react";
+"use client";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { FaClone, FaTrash } from "react-icons/fa";
 import { IoReorderThreeSharp } from "react-icons/io5";
 import { ReactSortable } from "react-sortablejs";
 import Switch from "../Switch/Switch";
-import { questions as mockQuestions } from "@/_mocks/questions";
+// import { questions as mockQuestions } from "@/_mocks/questions";
+import { QuestionsDTO } from "@/types/QuestionDTO";
+import { debounce } from "lodash";
 
-type Question = {
-  id: number;
-  text: string;
-};
+interface SurveyQuestionListProps {
+  surveyId: string;
+}
 
-export default function SurveyQuestionList() {
-  const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+export default function SurveyQuestionList({
+  surveyId,
+}: SurveyQuestionListProps) {
+  const [questions, setQuestions] = useState<QuestionsDTO["data"]>([]);
+
+  const getQuestions = useCallback(async () => {
+    const response = await fetch(`/api/surveys/${surveyId}/questions`);
+    const { data } = await response.json();
+    setQuestions(data);
+  }, [surveyId]);
+
+  const handleAddQuestion = async () => {
+    const text = prompt("Whats the question?");
+    await fetch(`/api/surveys/${surveyId}/questions`, {
+      method: "POST",
+      body: JSON.stringify({
+        text,
+      }),
+    });
+
+    getQuestions();
+  };
+
+  const handleQuestionTextChange = debounce(
+    async ({ target }: FormEvent<HTMLDivElement>, questionId: string) => {
+      const response = await fetch(
+        `/api/surveys/${surveyId}/questions/${questionId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            text: (target as any).innerText,
+          }),
+        }
+      );
+    },
+    500
+  );
+
+  const handlePositionChange = (newState: QuestionsDTO["data"]) => {
+    setQuestions(newState);
+    console.log(JSON.stringify(newState));
+  };
+
+  useEffect(() => {
+    getQuestions();
+  }, [getQuestions]);
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -29,9 +75,10 @@ export default function SurveyQuestionList() {
       </div>
       <ReactSortable
         list={questions}
-        setList={setQuestions}
+        setList={handlePositionChange}
         animation={200}
         handle=".handle"
+        onUpdate={console.log}
       >
         {questions.map((item, index) => (
           <div
@@ -45,6 +92,7 @@ export default function SurveyQuestionList() {
             <div
               className="col-span-6 flex items-center !border-0 !outline-0"
               contentEditable
+              onInput={(e) => handleQuestionTextChange(e, item.id)}
             >
               {item.text}
             </div>
@@ -62,6 +110,14 @@ export default function SurveyQuestionList() {
           </div>
         ))}
       </ReactSortable>
+      <div className="w-full">
+        <button
+          className="bg-primary w-full py-2 text-white font-bold"
+          onClick={handleAddQuestion}
+        >
+          Add a Question
+        </button>
+      </div>
     </div>
   );
 }

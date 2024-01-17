@@ -1,17 +1,18 @@
 "use client";
 
-import { FormEventHandler } from "react";
+import { SurveyDTO } from "@/types/SurveyDTO";
+import { FormEventHandler, useMemo } from "react";
 
 interface SurveyFormProps {
   title: string;
+  defaultValues?: SurveyDTO["data"];
+  updateSurvey: (formData: FormData) => void;
 }
 
 export default function SurveyForm(props: SurveyFormProps) {
-  const handleFormSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-    const { currentTarget } = e;
-    const formData = new FormData(currentTarget);
-  };
+  const defaultValues: Partial<SurveyDTO["data"]> = useMemo(() => {
+    return props.defaultValues || {};
+  }, [props]);
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -20,7 +21,7 @@ export default function SurveyForm(props: SurveyFormProps) {
           {props.title}
         </h3>
       </div>
-      <form onSubmit={handleFormSubmit}>
+      <form action={props.updateSurvey}>
         <div className="p-6.5">
           <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
             <div className="w-full xl:w-1/2">
@@ -37,6 +38,7 @@ export default function SurveyForm(props: SurveyFormProps) {
                 placeholder="Enter the survey name"
                 className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 required
+                defaultValue={defaultValues.name}
               />
             </div>
 
@@ -54,6 +56,7 @@ export default function SurveyForm(props: SurveyFormProps) {
                 placeholder="Enter your email"
                 className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 required
+                defaultValue={defaultValues.manager}
               />
             </div>
           </div>
@@ -71,6 +74,7 @@ export default function SurveyForm(props: SurveyFormProps) {
               rows={6}
               placeholder="Type your introduction message"
               className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+              defaultValue={defaultValues.introduction!}
             ></textarea>
           </div>
 
@@ -86,6 +90,7 @@ export default function SurveyForm(props: SurveyFormProps) {
                 className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 id="status"
                 name="status"
+                defaultValue={defaultValues.status}
               >
                 <option value="DRAFT">Draft</option>
                 <option value="ONGOING">Ongoing</option>
@@ -114,7 +119,7 @@ export default function SurveyForm(props: SurveyFormProps) {
           </div>
 
           <button className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray">
-            Send Message
+            Save Survey
           </button>
         </div>
       </form>

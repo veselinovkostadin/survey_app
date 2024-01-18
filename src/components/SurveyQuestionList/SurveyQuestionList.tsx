@@ -2,11 +2,16 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { FaClone, FaTrash } from "react-icons/fa";
 import { IoReorderThreeSharp } from "react-icons/io5";
-import { ReactSortable } from "react-sortablejs";
+import {
+  ReactSortable,
+  Sortable,
+  SortableEvent,
+  Store,
+} from "react-sortablejs";
 import Switch from "../Switch/Switch";
 // import { questions as mockQuestions } from "@/_mocks/questions";
 import { QuestionsDTO } from "@/types/QuestionDTO";
-import { debounce } from "lodash";
+import { debounce, isNumber, noop } from "lodash";
 
 interface SurveyQuestionListProps {
   surveyId: string;
@@ -50,9 +55,20 @@ export default function SurveyQuestionList({
     500
   );
 
-  const handlePositionChange = (newState: QuestionsDTO["data"]) => {
-    setQuestions(newState);
-    console.log(JSON.stringify(newState));
+  const handlePositionChange = async (event: SortableEvent) => {
+    if (!isNumber(event.oldIndex)) return;
+    const question = questions[event.oldIndex];
+    const response = await fetch(
+      `/api/surveys/${surveyId}/questions/${question.id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          position: event.newIndex,
+        }),
+      }
+    );
+    const { data } = await response.json();
+    console.log(data);
   };
 
   useEffect(() => {
@@ -75,24 +91,25 @@ export default function SurveyQuestionList({
       </div>
       <ReactSortable
         list={questions}
-        setList={handlePositionChange}
+        setList={noop}
         animation={200}
         handle=".handle"
-        onUpdate={console.log}
+        onEnd={handlePositionChange}
       >
-        {questions.map((item, index) => (
+        {questions.map((item) => (
           <div
             className="grid grid-cols-7 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-9 md:px-6 2xl:px-7.5"
             key={item.id}
           >
             <div className="col-span-1 flex items-center gap-2 handle cursor-move">
               <IoReorderThreeSharp className="text-2xl" />
-              {index}
+              {item.position}
             </div>
             <div
               className="col-span-6 flex items-center !border-0 !outline-0"
               contentEditable
               onInput={(e) => handleQuestionTextChange(e, item.id)}
+              suppressContentEditableWarning={true}
             >
               {item.text}
             </div>

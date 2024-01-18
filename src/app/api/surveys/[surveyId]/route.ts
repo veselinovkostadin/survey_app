@@ -1,16 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import Survey from "@/schemas/Survey";
 import routeHandler from "@/lib/routeHandler";
 
-type ApiHandlerContext = {
-  params: {
-    surveyId: string;
-  };
-};
-
-export const GET = routeHandler(async (request, context) => {
+export const GET = routeHandler(async (_, context) => {
   const { surveyId } = context.params;
   const survey = await prisma.survey.findUniqueOrThrow({
     where: {
@@ -39,7 +31,7 @@ export const PATCH = routeHandler(async (request, context) => {
   return survey;
 });
 
-export const DELETE = routeHandler(async (request, context) => {
+export const DELETE = routeHandler(async (_, context) => {
   const { surveyId } = context.params;
 
   await prisma.survey.delete({

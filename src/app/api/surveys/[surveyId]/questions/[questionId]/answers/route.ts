@@ -2,6 +2,7 @@ import routeHandler from "@/lib/routeHandler";
 import prisma from "@/lib/prisma";
 import QuestionAnswer from "@/schemas/QuestionAnswer";
 import { HfInference } from "@huggingface/inference";
+import { SentimentLabel } from "@prisma/client";
 
 export const POST = routeHandler(async (request, context) => {
   const { questionId } = context.params;
@@ -28,9 +29,18 @@ export const POST = routeHandler(async (request, context) => {
     inputs: data.answer,
   });
 
+  const maxSentiment = sentiment.reduce((max, currentSentiment) =>
+    currentSentiment.score > max.score ? currentSentiment : max
+  );
+
   const questionAnswer = await prisma.questionAnswer.create({
-    data: { ...data, questionId },
+    data: {
+      ...data,
+      questionId,
+      sentimentLabel: maxSentiment.label as SentimentLabel,
+      sentimentScore: +maxSentiment.score.toFixed(5),
+    },
   });
 
-  return { questionAnswer, sentiment };
+  return questionAnswer;
 });

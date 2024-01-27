@@ -71,6 +71,33 @@ export default function SurveyQuestionList({
     console.log(data);
   };
 
+  const handleDeleteQuestion = async (questionId:string) => {
+    await fetch(`/api/surveys/${surveyId}/questions/${questionId}`,
+    {
+      method: "DELETE",
+    });
+
+    getQuestions();
+  }
+
+  const handleDuplicateQuestion = async (question:any) => {
+    const newQuestion = {
+      text: question.text,
+      required: question.required,
+    }
+
+    console.log(newQuestion)
+    await fetch(`/api/surveys/${surveyId}/questions`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        ...newQuestion,
+      })
+    })
+
+    getQuestions();
+  }
+
   useEffect(() => {
     getQuestions();
   }, [getQuestions]);
@@ -117,10 +144,10 @@ export default function SurveyQuestionList({
               <Switch />
             </div>
             <div className="col-span-1 flex items-center justify-end">
-              <button className="hover:text-primary py-2 px-2 rounded text-lg">
+              <button className="hover:text-primary py-2 px-2 rounded text-lg" onClick={() => handleDuplicateQuestion(item)}>
                 <FaClone />
               </button>
-              <button className="hover:text-primary py-2 px-2 rounded text-lg">
+              <button className="hover:text-primary py-2 px-2 rounded text-lg" onClick={() => handleDeleteQuestion(item.id)}>
                 <FaTrash />
               </button>
             </div>

@@ -14,7 +14,7 @@ export default function SurveyCreatePage() {
       status: formData.get("status") as SurveyStatus,
     };
 
-    const response = await fetch(`${process.env.API_URL}/surveys/`, {
+    const response = await fetch(`${process.env.API_URL}/surveys`, {
       method: "POST",
       body: JSON.stringify(data),
     });

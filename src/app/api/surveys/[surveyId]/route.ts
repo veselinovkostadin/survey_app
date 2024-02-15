@@ -10,6 +10,9 @@ export const GET = routeHandler(async (_, context) => {
     where: {
       id: surveyId,
     },
+    include:{
+      questions: true,
+    },
   });
 
   return survey;

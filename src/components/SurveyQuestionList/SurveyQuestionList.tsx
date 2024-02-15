@@ -98,6 +98,21 @@ export default function SurveyQuestionList({
     getQuestions();
   }
 
+  const handleEnabled = async (enabled: boolean,questionId:string) => {
+
+    const response = await fetch(
+      `/api/surveys/${surveyId}/questions/${questionId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          required: enabled
+        }),
+      }
+    );
+
+    getQuestions();
+  }
+
   useEffect(() => {
     getQuestions();
   }, [getQuestions]);
@@ -141,7 +156,7 @@ export default function SurveyQuestionList({
               {item.text}
             </div>
             <div className="col-span-1">
-              <Switch />
+              <Switch handleEnabled={handleEnabled} id={item.id} required={item.required}/>
             </div>
             <div className="col-span-1 flex items-center justify-end">
               <button className="hover:text-primary py-2 px-2 rounded text-lg" onClick={() => handleDuplicateQuestion(item)}>
